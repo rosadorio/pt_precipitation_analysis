@@ -1,16 +1,14 @@
 # pt_precipitation_analysis
-This repo contains the analysis of precipitation data in Portugal in the period of 1950-2003
+This repo contains the analysis of precipitation data for Portugal in the period of 1950-2003
 
-The dataset is inside the ipma folder and the script with the analysis is in src/
+The dataset is provided inside the ipma/ folder and the script in src/ipma_pt2_plot.py does a simple analysis of the monthly and yearly precipitation for the coordinates you provide.
 
-ipma_pt2_plot.py has harcoded a single geographical location,
+To run the script you just need to have python 3.8 or higher installed in your environment. Simply find the coordinateds of your desired location and run the script in the following way
 
-**Specify the latitude and longitude of Monchique land**
+`cd pt_precipitation_analysis/src`
 
-target_lat = 37.24
+`./ipma_pt2_plot.py --lat 'targer lat' --lon 'target lon' --data-directory 'relative path to data'`
 
-target_lon = -8.70
+example:
 
-You can change it to the desired GPS coordinates and run (only dependencies are python3)
-
-*./python3 src/ipma_pt2_plot.py*
+`run ipma_pt2_plot.py --lat 37.24 --lon -8.70 --data-directory ../ipma/mensal/`
