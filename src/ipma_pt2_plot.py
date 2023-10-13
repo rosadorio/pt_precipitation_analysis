@@ -118,7 +118,7 @@ def main(target_lat, target_lon, data_directory):
     plt.tight_layout()
     
     # Save the figure
-    plt.savefig(directory + 'bravura_monthly_precipitation_with_histogram_1950_2003.png', format='png')
+    plt.savefig('bravura_monthly_precipitation_with_histogram_1950_2003.png', format='png')
     
     # Show the plot
     plt.show()
@@ -151,22 +151,21 @@ def main(target_lat, target_lon, data_directory):
     # Split the data into batches of 12 months each
     batch_size = 12
     year_batches = [sorted_data[i:i+batch_size] for i in range(0, len(sorted_data), batch_size)]
-    
-    # Sort each year batch by the precipitation number - tuple (index 1)
-    sorted_batches = [sorted(batch, key=lambda x: x[1], reverse=True) for batch in year_batches]
 
-    for y in range(0,len(sorted_batches)):
+    for y in range(0,len(year_batches)):
         # Plot each month's accumulated precipitation
+        bottom=0
         for m in range(0, 12):
-            precip_value = sorted_batches[y][m][1]
-            year=int(sorted_batches[y][m][0].split('-')[0])
-            month = int(sorted_batches[y][m][0].split('-')[1])
-            month_name,color=month_colors[month]
-            plt.bar(year, precip_value, color=color)
+            precip_value = year_batches[y][m][1]
+            year=int(year_batches[y][m][0].split('-')[0])
+            month_name,color=month_colors[m+1]
+            plt.bar(year, precip_value, color=color,bottom=bottom)
+            bottom += precip_value
+        
     
     plt.xlabel('Year', fontsize=14)
     plt.ylabel('Precipitation (mm)', fontsize=14)
-    plt.title(f'Monthly Precipitation at Latitude {target_lat}, Longitude {target_lon}', fontsize=16)
+    plt.title(f' Yearly Precipitation at Latitude {target_lat}, Longitude {target_lon} monthly contribution', fontsize=16)
     plt.grid(True, linestyle='--', alpha=0.7)
     
     # Configure x-axis ticks
@@ -178,8 +177,11 @@ def main(target_lat, target_lon, data_directory):
     plt.legend(handles=legend_labels, fontsize=10, title="Months", title_fontsize=12, loc='upper left')
 
     plt.tight_layout()
-    plt.show()
     
+    # Save the figure
+    plt.savefig('bravura_yearly_precipitation_per_month_1950_2003.png', format='png')
+    
+    plt.show()
     
     
     
@@ -251,7 +253,7 @@ def main(target_lat, target_lon, data_directory):
     plt.tight_layout()
     
     # Save the figure
-    plt.savefig(directory + 'bravura_yearly_precipitation_with_histogram_1950_2003.png', format='png')
+    plt.savefig('bravura_yearly_precipitation_with_histogram_1950_2003.png', format='png')
     
     # Show the plot
     plt.show()
