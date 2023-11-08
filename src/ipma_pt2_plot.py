@@ -7,14 +7,9 @@ from datetime import datetime
 
 import os
 
-
-def main(target_lat, target_lon, data_directory):
-    # Get the absolute path to the data directory
-    directory = os.path.join(os.path.dirname(__file__), data_directory)
-
-
+def read_inputs(directory,target_lat,target_lon):
     # Latitude and longitude of Herdade da Bravura
-    #target_lat = 37.24
+    #target_lat = 37.24    # location index [25,5] - Monchique Area
     #target_lon = -8.70
     
     # Initialize empty lists to store data
@@ -41,15 +36,12 @@ def main(target_lat, target_lon, data_directory):
                 precip_data = precip_var[:]
     
     
-                # Find the index corresponding to the target latitude and longitude
-                # location index [25,5] - Monchique Area
                 # Calculate the index based on the closest value to the target latitude and longitude
                 lat_idx =  np.abs(lat_var[:] - target_lat).argmin()
                 lon_idx =  np.abs(lon_var[:] - target_lon).argmin()
         
                 # Close the NetCDF file
                 dataset.close()  
-                
                 
                 # Convert the time data to a more readable format ('YYYY-MM-DD')
                 time_strings = [datetime.strptime(str(int(date)), '%Y%m%d').strftime('%Y-%m') for date in time_data]
@@ -64,11 +56,12 @@ def main(target_lat, target_lon, data_directory):
     
     # Sort the time data
     sorted_data = sorted(zip(all_time_data, all_precip_data), key=lambda x: x[0])
-    all_time_data, all_precip_data = zip(*sorted_data)    
-    
-              
-    #-----------------------------------------
-    
+    all_time_data, all_precip_data = zip(*sorted_data) 
+    return sorted_data,all_time_data, all_precip_data
+
+
+
+def plot_monthly_precip_histogram(all_time_data,all_precip_data,target_lat,target_lon):
     # Calculate the histogram of monthly precipitation values
     hist, bin_edges = np.histogram(all_precip_data, bins=30)
     
@@ -124,8 +117,7 @@ def main(target_lat, target_lon, data_directory):
     plt.show()
     
     
-    #----------------------------------------------------- 
-    
+def plot_monthly_precip(sorted_data, all_time_data, target_lat,target_lon):
     # Create a dictionary to map months to their respective season colors
     month_colors = {
         1: ('January', '#0000FF'),    # January - Winter (Dark Blue)
@@ -151,7 +143,7 @@ def main(target_lat, target_lon, data_directory):
     # Split the data into batches of 12 months each
     batch_size = 12
     year_batches = [sorted_data[i:i+batch_size] for i in range(0, len(sorted_data), batch_size)]
-
+    
     for y in range(0,len(year_batches)):
         # Plot each month's accumulated precipitation
         bottom=0
@@ -175,19 +167,15 @@ def main(target_lat, target_lon, data_directory):
     # Create a legend outside the loop
     legend_labels = [plt.Line2D([0], [0], color=month_colors[m][1], lw=4, label=month_colors[m][0]) for m in range(1,13)]
     plt.legend(handles=legend_labels, fontsize=10, title="Months", title_fontsize=12, loc='upper left')
-
+    
     plt.tight_layout()
     
     # Save the figure
     plt.savefig('bravura_yearly_precipitation_per_month_1950_2003.png', format='png')
     
-    plt.show()
+    plt.show()    
     
-    
-    
-    
-    #-----------------------------------------------------
-    
+def plot_yearly_precip(all_time_data, all_precip_data, target_lat,target_lon):
     # Calculate accumulated rainfall per year
     years = set(date.split('-')[0] for date in all_time_data)
     accumulated_rain_per_year = {}
@@ -196,14 +184,10 @@ def main(target_lat, target_lon, data_directory):
         year_rainfall = sum(all_precip_data[i] for i in year_indices)
         accumulated_rain_per_year[year] = year_rainfall
     
-    # Calculate the average rainfall per year
-    average_rainfall = np.mean(list(accumulated_rain_per_year.values()))
-    
     # Create a list of (year, accumulated precipitation) tuples and sort it by year
     yearly_data = sorted(list(accumulated_rain_per_year.items()), key=lambda x: int(x[0]))
     # Extract the sorted years and accumulated rainfall values
     years_list, rainfall_list = zip(*yearly_data)
-    average_accumulated_rainfall = np.mean(rainfall_list)
     
     # Find the year(s) with maximum and minimum accumulated precipitation
     max_rainfall_year = years_list[np.argmax(rainfall_list)]
@@ -222,16 +206,12 @@ def main(target_lat, target_lon, data_directory):
     
     # # Highlight the year with maximum accumulated precipitation
     ax0.axvline(x=max_rainfall_year, color='green', linestyle='--', linewidth=2, alpha=0.7, 
-                label=f'Max Precipitation Year {max_rainfall_year}')
-    
+                label=f'Max Precipitation Year {max_rainfall_year}')   
     # # Highlight the year with minimum accumulated precipitation
     ax0.axvline(x=min_rainfall_year, color='tab:red', linestyle='--', linewidth=2, alpha=0.7,
                  label=f'Min Precipitation Year {min_rainfall_year}')
     
-    # Add a light grey horizontal grid for the precipitation values on the y-axis
     ax0.yaxis.grid(color='lightgrey', linestyle='--', alpha=1)
-    
-    # Add a light grey vertical grid
     ax0.xaxis.grid(color='lightgrey', linestyle='--', alpha=0.5)
     
     ax0.legend()
@@ -259,11 +239,17 @@ def main(target_lat, target_lon, data_directory):
     plt.show()
 
 
+def main(target_lat, target_lon, data_directory):
+    # Get the absolute path to the data directory
+    directory = os.path.join(os.path.dirname(__file__), data_directory)
 
-    #-----------------------------------------------------
+    sorted_data, all_time_data, all_precip_data = read_inputs(directory,target_lat,target_lon)
+
+
+    plot_monthly_precip_histogram(all_time_data, all_precip_data,target_lat,target_lon)
+    plot_monthly_precip(sorted_data, all_time_data, target_lat,target_lon)
+    plot_yearly_precip(all_time_data, all_precip_data, target_lat,target_lon)
     
-
-
 
 
 if __name__ == "__main__":
